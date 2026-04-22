@@ -18,12 +18,6 @@ def run() -> None:
 
     parser = argparse.ArgumentParser(description="Flight Planner Agent")
     parser.add_argument(
-        "--provider",
-        choices=["anthropic", "azure_openai"],
-        default=os.getenv("AGENT_PROVIDER", "anthropic"),
-        help="LLM provider to use",
-    )
-    parser.add_argument(
         "--user-id",
         default=None,
         help="User ID for personalized context (e.g. user-001)",
@@ -38,7 +32,7 @@ def run() -> None:
     console.print(
         Panel.fit(
             f"[bold blue]Flight Planner Agent[/bold blue]\n"
-            f"Provider: [green]{args.provider}[/green]  |  "
+            f"Provider: [green]Azure OpenAI[/green]  |  "
             f"API: [green]{args.api_url}[/green]"
             + (f"  |  User: [green]{args.user_id}[/green]" if args.user_id else ""),
             title="✈  Welcome",
@@ -46,7 +40,7 @@ def run() -> None:
     )
     console.print("[dim]Type 'exit' or press Ctrl+C to quit.[/dim]\n")
 
-    graph = build_graph(api_base_url=args.api_url, provider=args.provider)
+    graph = build_graph(api_base_url=args.api_url)
     history: list = []
 
     while True:

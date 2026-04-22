@@ -37,10 +37,10 @@ def _should_continue(state: AgentState) -> Literal["tools", "__end__"]:
     return "__end__"
 
 
-def build_graph(api_base_url: str, provider: str = "anthropic"):
+def build_graph(api_base_url: str):
     """Compile a ReAct LangGraph agent wired to the flight planner API."""
     tools = get_tools(api_base_url)
-    llm = get_llm(provider)
+    llm = get_llm()
     llm_with_tools = llm.bind_tools(tools)
     tool_node = ToolNode(tools)
 
