@@ -1,8 +1,10 @@
-from typing import Literal
+from typing import Literal, Optional
 
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, ToolMessage
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
+from langgraph.types import interrupt
 
 from .config import get_llm
 from .state import AgentState
@@ -37,7 +39,24 @@ def _should_continue(state: AgentState) -> Literal["tools", "__end__"]:
     return "__end__"
 
 
-def build_graph(api_base_url: str):
+def _human_review_node(state: AgentState) -> dict:
+    """Pause after every tool round so the human can review results before continuing."""
+    messages = state["messages"]
+    tool_results = []
+    for msg in reversed(messages):
+        if isinstance(msg, ToolMessage):
+            tool_results.insert(0, {
+                "tool": msg.name,
+                "content": msg.content[:1000],
+            })
+        else:
+            break
+
+    interrupt({"tool_results": tool_results})
+    return {}
+
+
+def build_graph(api_base_url: str, checkpointer: Optional[BaseCheckpointSaver] = None):
     """Compile a ReAct LangGraph agent wired to the flight planner API."""
     tools = get_tools(api_base_url)
     llm = get_llm()
@@ -53,8 +72,14 @@ def build_graph(api_base_url: str):
     graph = StateGraph(AgentState)
     graph.add_node("agent", agent_node)
     graph.add_node("tools", tool_node)
-    graph.add_edge(START, "agent")
-    graph.add_conditional_edges("agent", _should_continue)
-    graph.add_edge("tools", "agent")
+    graph.add_node("human_review", _human_review_node)
 
-    return graph.compile()
+    graph.add_edge(START, "agent")
+    graph.add_conditional_edges("agent", _should_continue, {
+        "tools": "tools",
+        "__end__": END,
+    })
+    graph.add_edge("tools", "human_review")
+    graph.add_edge("human_review", "agent")
+
+    return graph.compile(checkpointer=checkpointer)

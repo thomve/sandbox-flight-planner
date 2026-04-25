@@ -1,0 +1,97 @@
+<div class="app">
+  <header>
+    <span class="logo">✈</span>
+    <h1>Flight Planner Agent</h1>
+  </header>
+
+  <main class="chat-area">
+    @for (ev of events(); track ev.id) {
+      @switch (ev.kind) {
+        @case ('user') {
+          <div class="bubble user">
+            <div class="bubble-label">You</div>
+            <div class="bubble-body">{{ ev.text }}</div>
+          </div>
+        }
+        @case ('tool_start') {
+          <div class="bubble tool-start">
+            <div class="bubble-label">🔧 {{ ev.tool }}</div>
+            <pre class="code">{{ ev.toolInput | json }}</pre>
+          </div>
+        }
+        @case ('tool_end') {
+          <div class="bubble tool-end">
+            <div class="bubble-label">📋 Result from {{ ev.tool }}</div>
+            <pre class="code">{{ ev.toolOutput }}</pre>
+          </div>
+        }
+        @case ('agent_thinking') {
+          <div class="bubble agent">
+            <div class="bubble-label">Agent</div>
+            <div class="bubble-body">{{ ev.text }}</div>
+          </div>
+        }
+        @case ('interrupt') {
+          <div class="bubble interrupt">
+            <div class="bubble-label">⚠️ Checkpoint — review before continuing</div>
+            @for (cp of (ev.checkpoints ?? []); track $index) {
+              @for (tr of cp.tool_results; track $index) {
+                <div class="checkpoint-result">
+                  <strong>{{ tr.tool }}</strong>
+                  <pre class="code">{{ tr.content }}</pre>
+                </div>
+              }
+            }
+            <div class="interrupt-actions">
+              <button class="btn-continue" (click)="validate(true)">✓ Continue</button>
+              <button class="btn-stop" (click)="validate(false)">✗ Stop</button>
+            </div>
+          </div>
+        }
+        @case ('done') {
+          <div class="status-done">✅ Agent finished.</div>
+        }
+        @case ('error') {
+          <div class="status-error">❌ {{ ev.text }}</div>
+        }
+      }
+    }
+
+    @if (currentTokens()) {
+      <div class="bubble agent live">
+        <div class="bubble-label">Agent</div>
+        <div class="bubble-body">{{ currentTokens() }}</div>
+      </div>
+    }
+
+    @if (isStreaming() && !isInterrupted() && !currentTokens()) {
+      <div class="thinking">
+        <span></span><span></span><span></span>
+      </div>
+    }
+
+    <div #chatEnd></div>
+  </main>
+
+  <footer class="input-area">
+    <input
+      class="input-userid"
+      type="text"
+      [(ngModel)]="userId"
+      placeholder="User ID (optional — e.g. user-001)"
+    />
+    <div class="input-row">
+      <input
+        class="input-query"
+        type="text"
+        [(ngModel)]="query"
+        (keyup.enter)="submit()"
+        placeholder="Ask the flight planner…"
+        [disabled]="isStreaming()"
+      />
+      <button class="btn-send" (click)="submit()" [disabled]="isStreaming()">
+        {{ isStreaming() ? '…' : 'Send' }}
+      </button>
+    </div>
+  </footer>
+</div>

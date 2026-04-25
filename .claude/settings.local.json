@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx --yes @angular/cli@17 new flight-planner-ui --directory=frontend --routing=false --style=css --skip-git --skip-tests --defaults)",
+      "Bash(npx ng *)"
+    ]
+  }
+}
