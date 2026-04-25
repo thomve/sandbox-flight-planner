@@ -13,11 +13,10 @@ interface ChatEvent {
 }
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [FormsModule, JsonPipe],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+    selector: 'app-root',
+    imports: [FormsModule, JsonPipe],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css'
 })
 export class AppComponent {
   @ViewChild('chatEnd') chatEnd!: ElementRef;
