@@ -74,12 +74,17 @@
   </main>
 
   <footer class="input-area">
-    <input
-      class="input-userid"
-      type="text"
-      [(ngModel)]="userId"
-      placeholder="User ID (optional — e.g. user-001)"
-    />
+    <div class="input-meta">
+      <input
+        class="input-userid"
+        type="text"
+        [(ngModel)]="userId"
+        placeholder="User ID (optional — e.g. user-001)"
+      />
+      <button class="btn-new" (click)="newConversation()" [disabled]="isStreaming()" title="Start a new conversation">
+        + New chat
+      </button>
+    </div>
     <div class="input-row">
       <input
         class="input-query"

@@ -24,10 +24,12 @@ _resume_values: dict[str, Any] = {}
 def _get_graph():
     global _checkpointer, _graph
     if _graph is None:
+        import os
         from src.agent.graph import build_graph
         _checkpointer = MemorySaver()
         _graph = build_graph(
             api_base_url="http://localhost:8000",
+            provider=os.getenv("AGENT_PROVIDER", "huggingface"),
             checkpointer=_checkpointer,
         )
     return _graph
@@ -40,6 +42,7 @@ def _get_graph():
 class AgentRunRequest(BaseModel):
     query: str
     user_id: Optional[str] = None
+    thread_id: Optional[str] = None
 
 
 class ResumeRequest(BaseModel):
@@ -52,8 +55,8 @@ class ResumeRequest(BaseModel):
 
 @router.post("/run")
 async def run_agent(request: AgentRunRequest):
-    """Start a new agent thread and stream its execution as Server-Sent Events."""
-    thread_id = str(uuid.uuid4())
+    """Start or continue an agent thread and stream its execution as Server-Sent Events."""
+    thread_id = request.thread_id or str(uuid.uuid4())
     return StreamingResponse(
         _stream_agent(thread_id, request.query, request.user_id),
         media_type="text/event-stream",

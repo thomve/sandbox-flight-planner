@@ -56,10 +56,10 @@ def _human_review_node(state: AgentState) -> dict:
     return {}
 
 
-def build_graph(api_base_url: str, checkpointer: Optional[BaseCheckpointSaver] = None):
+def build_graph(api_base_url: str, provider: str = "huggingface", checkpointer: Optional[BaseCheckpointSaver] = None):
     """Compile a ReAct LangGraph agent wired to the flight planner API."""
     tools = get_tools(api_base_url)
-    llm = get_llm()
+    llm = get_llm(provider)
     llm_with_tools = llm.bind_tools(tools)
     tool_node = ToolNode(tools)
 

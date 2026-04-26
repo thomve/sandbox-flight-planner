@@ -253,8 +253,37 @@ header h1 {
   gap: 10px;
 }
 
+.input-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-new {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-new:hover:not(:disabled) {
+  color: #94a3b8;
+  border-color: #4b5563;
+}
+
+.btn-new:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .input-userid {
-  width: 280px;
+  flex: 1;
   background: #1e293b;
   border: 1px solid #334155;
   color: #94a3b8;

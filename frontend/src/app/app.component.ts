@@ -52,20 +52,26 @@ export class AppComponent {
     }
   }
 
+  newConversation() {
+    if (this.isStreaming()) return;
+    this.events.set([]);
+    this.currentTokens.set('');
+    this.currentThreadId.set(null);
+    this.isInterrupted.set(false);
+  }
+
   async submit() {
     const q = this.query.trim();
     if (!q || this.isStreaming()) return;
 
-    this.events.set([]);
     this.currentTokens.set('');
-    this.currentThreadId.set(null);
     this.isInterrupted.set(false);
     this.isStreaming.set(true);
     this.push({ kind: 'user', text: q });
     this.query = '';
 
     try {
-      await this.streamAgent(q, this.userId || undefined);
+      await this.streamAgent(q, this.userId || undefined, this.currentThreadId() ?? undefined);
     } finally {
       this.isStreaming.set(false);
     }
@@ -82,11 +88,11 @@ export class AppComponent {
     });
   }
 
-  private async streamAgent(query: string, userId?: string) {
+  private async streamAgent(query: string, userId?: string, threadId?: string) {
     const resp = await fetch(`${this.API}/agent/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, user_id: userId ?? null }),
+      body: JSON.stringify({ query, user_id: userId ?? null, thread_id: threadId ?? null }),
     });
 
     if (!resp.body) return;
